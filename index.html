@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>漫画でわかる メモリーブック誕生物語</title>
+<meta name="description" content="台風や大雨で大切なアルバムを失った方のニュースをきっかけに生まれたアプリ「メモリーブック」。写真・アルバム・子どもの絵を撮るだけで電子の本に。その誕生ストーリーを全80ページの漫画で無料公開。">
+<meta property="og:title" content="漫画でわかる メモリーブック誕生物語">
+<meta property="og:description" content="大切な思い出を、なくさない本に。写真・アルバム・子どもの絵をデジタル保存するアプリの誕生ストーリー（全80ページ・無料）">
+<meta property="og:image" content="https://bbvaluekouhei-jpg.github.io/memory-book-manga/cover.jpg">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14223a;            /* 紺の表紙 */
+    --bg-elevated: #1f3a5f;
+    --text: #fbf6ea;          /* クリーム色の紙 */
+    --text-dim: #b9c2cf;
+    --accent: #c49e4a;        /* 金の栞 */
+    --accent-soft: #e9d9ae;
+    --divider: rgba(251, 246, 234, 0.16);
+    --shadow: rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  }
+
+  .viewer { position: relative; height: 100dvh; width: 100%; display: flex; flex-direction: column; }
+
+  .progress-track { height: 3px; background: var(--divider); flex-shrink: 0; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.25s ease; }
+
+  .titlebar {
+    position: absolute; top: 14px; left: 18px; right: 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: none; z-index: 5;
+  }
+  .titlebar .name { font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; }
+
+  .stage {
+    position: relative; flex: 1; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 44px 16px 16px; cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+  }
+  .slide-wrap { position: relative; height: 100%; max-width: 100%; display: flex; align-items: center; justify-content: center; }
+
+  .page-img {
+    max-height: 100%; max-width: 100%; height: auto; width: auto; object-fit: contain;
+    border-radius: 6px; box-shadow: 0 18px 48px var(--shadow); background: #fff;
+    opacity: 0; transform: scale(0.985); transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .page-img.active { opacity: 1; transform: scale(1); }
+
+  .spinner {
+    position: absolute; width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--divider); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite; opacity: 0; transition: opacity 0.15s ease;
+  }
+  .spinner.show { opacity: 1; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .cta-slide {
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 22px; max-width: 420px; height: 100%; padding: 28px; margin: auto;
+    background: linear-gradient(165deg, #23406a, #14223a 60%);
+    border: 1px solid rgba(196, 158, 74, 0.45);
+    border-radius: 18px; box-shadow: 0 18px 48px var(--shadow);
+    opacity: 0; transform: scale(0.985); transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .cta-slide.active { display: flex; opacity: 1; transform: scale(1); }
+
+  .cta-icon { width: 72px; height: 72px; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35); }
+  .cta-icon img { width: 100%; height: 100%; display: block; }
+
+  .cta-line { font-family: "Shippori Mincho", serif; font-size: 20px; line-height: 1.7; color: var(--accent-soft); }
+  .cta-sub { font-size: 14px; line-height: 1.8; color: var(--text-dim); }
+
+  .cta-btn {
+    display: inline-block; text-decoration: none; font-weight: 700; font-size: 15px;
+    color: #14223a; background: var(--accent); border-radius: 999px; padding: 13px 28px;
+    box-shadow: 0 8px 22px rgba(196, 158, 74, 0.35);
+  }
+  .cta-btn:hover { background: var(--accent-soft); }
+
+  .cta-replay {
+    font-size: 13px; color: var(--text-dim); background: transparent;
+    border: 1px solid var(--divider); border-radius: 999px; padding: 8px 18px;
+    cursor: pointer; font-family: inherit;
+  }
+  .cta-replay:hover { border-color: var(--accent-soft); color: var(--accent-soft); }
+
+  .nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid var(--divider); background: rgba(20, 34, 58, 0.6); backdrop-filter: blur(6px);
+    color: var(--text); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 6;
+    transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  }
+  .nav-btn:hover { background: rgba(196, 158, 74, 0.2); border-color: var(--accent-soft); }
+  .nav-btn.prev { left: 14px; }
+  .nav-btn.next { right: 14px; }
+  .nav-btn[disabled] { opacity: 0.25; pointer-events: none; }
+  .nav-btn svg { width: 18px; height: 18px; }
+
+  @media (max-width: 640px) {
+    .nav-btn { width: 36px; height: 36px; }
+    .nav-btn.prev { left: 8px; }
+    .nav-btn.next { right: 8px; }
+  }
+
+  .footer-bar {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 10px 16px 16px; font-variant-numeric: tabular-nums;
+  }
+  .counter { font-size: 12px; color: var(--text-dim); letter-spacing: 0.03em; }
+
+  .hint {
+    position: absolute; bottom: 54px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: var(--text-dim); background: rgba(20, 34, 58, 0.7);
+    border: 1px solid var(--divider); padding: 6px 14px; border-radius: 999px;
+    pointer-events: none; transition: opacity 0.4s ease; white-space: nowrap;
+  }
+  .hint.gone { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-img, .cta-slide, .nav-btn, .progress-fill, .hint { transition: none !important; }
+    .spinner { animation-duration: 1.6s; }
+  }
+</style>
+</head>
+<body>
+<div class="viewer" id="viewer">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="titlebar">
+    <span class="name">漫画でわかる メモリーブック誕生物語</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="slide-wrap" id="slideWrap">
+      <div class="spinner" id="spinner"></div>
+      <img class="page-img" id="pageImg" alt="漫画のページ">
+      <div class="cta-slide" id="ctaSlide">
+        <div class="cta-icon"><img src="icon.png" alt="メモリーブックのアイコン"></div>
+        <div class="cta-line">大切な思い出を、<br>なくさない本に。</div>
+        <div class="cta-sub">アルバムも、子どもの絵も、大切な手紙も。<br>撮るだけで、ずっと残せる電子の本に。<br>メモリーブック、はじめてみませんか。</div>
+        <a class="cta-btn" href="https://play.google.com/store/apps/details?id=com.bbvalue.nokosubook" target="_blank" rel="noopener">
+          アプリをダウンロード（無料）
+        </a>
+        <button class="cta-replay" id="replayBtn">はじめから読む</button>
+      </div>
+    </div>
+
+    <button class="nav-btn prev" id="prevBtn" aria-label="前のページ">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="nav-btn next" id="nextBtn" aria-label="次のページ">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="hint" id="hint">タップ / スワイプ / 矢印キーでページをめくれます</div>
+  </div>
+
+  <div class="footer-bar">
+    <span class="counter" id="counter">1 / 80</span>
+  </div>
+</div>
+
+<script>
+  // ページ画像は pages/001.webp 〜 pages/080.webp（めくるたびに読み込み、前後のページは先読みする）
+  var TOTAL_PAGES = 80;
+  var PAGES = [];
+  for (var n = 1; n <= TOTAL_PAGES; n++) PAGES.push('pages/' + String(n).padStart(3, '0') + '.webp');
+
+  (function () {
+    var total = PAGES.length;
+    var totalSlides = total + 1;
+    var current = 0; // 0..total-1 = ページ, total = 最後の案内
+    var pageImg = document.getElementById('pageImg');
+    var ctaSlide = document.getElementById('ctaSlide');
+    var spinner = document.getElementById('spinner');
+    var prevBtn = document.getElementById('prevBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var counter = document.getElementById('counter');
+    var progressFill = document.getElementById('progressFill');
+    var stage = document.getElementById('stage');
+    var hint = document.getElementById('hint');
+    var replayBtn = document.getElementById('replayBtn');
+    var hintDismissed = false;
+    var cache = {};
+    var loadToken = 0;
+
+    // ?p=12 のようにページ番号付きで開けるようにする（SNSで途中のページを紹介したいとき用）
+    var startParam = parseInt(new URLSearchParams(location.search).get('p'), 10);
+    if (startParam >= 1 && startParam <= total) current = startParam - 1;
+
+    function dismissHint() {
+      if (hintDismissed) return;
+      hintDismissed = true;
+      hint.classList.add('gone');
+    }
+
+    function preload(i) {
+      if (i < 0 || i >= total || cache[i]) return;
+      var im = new Image();
+      im.src = PAGES[i];
+      cache[i] = im;
+    }
+
+    function showPage(i) {
+      var token = ++loadToken;
+      pageImg.classList.remove('active');
+      ctaSlide.classList.remove('active');
+
+      var apply = function () {
+        if (token !== loadToken) return;
+        pageImg.src = PAGES[i];
+        pageImg.alt = '漫画 ' + (i + 1) + 'ページ目';
+        pageImg.style.display = '';
+        spinner.classList.remove('show');
+        requestAnimationFrame(function () {
+          if (token !== loadToken) return;
+          pageImg.classList.add('active');
+        });
+      };
+
+      if (cache[i] && cache[i].complete) {
+        apply();
+      } else {
+        spinner.classList.add('show');
+        var im = new Image();
+        im.onload = function () {
+          cache[i] = im;
+          apply();
+        };
+        im.src = PAGES[i];
+      }
+
+      preload(i + 1);
+      preload(i + 2);
+      preload(i - 1);
+    }
+
+    function render() {
+      if (current === total) {
+        pageImg.style.display = 'none';
+        pageImg.classList.remove('active');
+        spinner.classList.remove('show');
+        ctaSlide.classList.add('active');
+        counter.textContent = 'おわり';
+      } else {
+        ctaSlide.classList.remove('active');
+        showPage(current);
+        counter.textContent = (current + 1) + ' / ' + total;
+      }
+
+      progressFill.style.width = ((current + 1) / totalSlides * 100) + '%';
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === total;
+    }
+
+    function goTo(i) {
+      if (i < 0 || i > total) return;
+      current = i;
+      render();
+      dismissHint();
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    prevBtn.addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+    nextBtn.addEventListener('click', function (e) { e.stopPropagation(); next(); });
+    replayBtn.addEventListener('click', function (e) { e.stopPropagation(); goTo(0); });
+
+    stage.addEventListener('click', function (e) {
+      if (e.target.closest('.nav-btn') || e.target.closest('.cta-slide')) return;
+      var rect = stage.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      if (x < rect.width / 2) prev(); else next();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === ' ') { next(); }
+      else if (e.key === 'ArrowLeft') { prev(); }
+    });
+
+    var touchStartX = null;
+    stage.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].clientX;
+    }, { passive: true });
+    stage.addEventListener('touchend', function (e) {
+      if (touchStartX === null) return;
+      var dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 40) {
+        if (dx < 0) next(); else prev();
+      }
+      touchStartX = null;
+    }, { passive: true });
+
+    setTimeout(dismissHint, 5000);
+    render();
+  })();
+</script>
+</body>
+</html>
